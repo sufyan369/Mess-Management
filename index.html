@@ -586,6 +586,18 @@
   /* INPUT FOCUS RING */
   input:focus, select:focus, textarea:focus { outline: none; }
 
+  footer {
+    text-align: center;
+    padding: 32px 16px 20px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+  footer strong { color: var(--text-secondary); font-weight: 600; }
+
   @media print {
     header, .card:first-child, .tabs, .btn, .unmatched-box, .btn-group { display: none !important; }
     body { background: #fff; }
@@ -634,6 +646,7 @@
       <div class="help-text">
         Recognises: <code>B</code> <code>Breakfast</code> <code>brkfst</code> <code>Ln</code> <code>Lunch</code>
         <code>S</code> <code>Snack</code> <code>D</code> <code>Dinner</code>
+        &middot; combine codes like <code>BLnSD</code> &middot; <code>V</code> = 🌿 veg
         &mdash; add custom keywords in the <strong>Keywords</strong> tab
       </div>
       <div class="btn-group">
@@ -660,6 +673,7 @@
               <tr>
                 <th>#</th>
                 <th>Name</th>
+                <th style="text-align:center;width:34px">Veg</th>
                 <th>Breakfast</th>
                 <th>Lunch</th>
                 <th>Snack</th>
@@ -708,6 +722,10 @@
   </div>
 
 </div>
+
+<footer>
+  <strong>Mess Duty Register</strong> &mdash; made with ❤️ for hostel life
+</footer>
 
 <script>
 const DEFAULT_ALIASES = {
@@ -789,23 +807,59 @@ function parseChat() {
   const namePattern = /^([A-Za-z][A-Za-z\s]{1,30}):\s*(.*)$/;
 
   function processMealLine(line, student) {
-    const token = line.trim().toLowerCase().replace(/[^a-z0-9\/]/g, '');
-    if (!token) return;
-    if (lookup[token]) {
-      student.meals.add(lookup[token]);
-    } else {
-      let matched = false;
-      for (const [key, meal] of Object.entries(lookup)) {
-        if (token.startsWith(key) || key.startsWith(token)) {
-          student.meals.add(meal);
-          matched = true;
-          break;
+    const raw = line.trim().toLowerCase().replace(/[^a-z0-9\/]/g, '');
+    if (!raw) return;
+
+    // 1) Direct match (whole alias like "breakfast", "lunch", "b", "ln")
+    if (lookup[raw]) {
+      student.meals.add(lookup[raw]);
+      return;
+    }
+
+    // 2) Composite code: short tokens like "blnsd", "blvsd", "blsd"
+    //    Split into individual meal codes + optional 'v' for veg
+    if (raw.length <= 8) {
+      let matchedAny = false;
+      let i = 0;
+      let foundVeg = false;
+      while (i < raw.length) {
+        let found = false;
+        // Try longest substring first (handles multi-char aliases: "ln", "dn")
+        for (let len = 2; len >= 1; len--) {
+          if (i + len > raw.length) continue;
+          const sub = raw.substring(i, i + len);
+          if (lookup[sub]) {
+            student.meals.add(lookup[sub]);
+            i += len;
+            found = true;
+            matchedAny = true;
+            break;
+          }
         }
+        if (found) continue;
+        // 'v' = veg marker (not a meal)
+        if (raw[i] === 'v') {
+          foundVeg = true;
+          i++;
+          matchedAny = true;
+          continue;
+        }
+        i++; // skip unknown char (e.g. stray 'n' after "ln" was already consumed)
       }
-      if (!matched && token.length > 0) {
-        unmatched.push({ name: student.name, token: line.trim() });
+      if (foundVeg) student.veg = true;
+      if (matchedAny) return;
+    }
+
+    // 3) Old partial-match fallback for longer text ("lunchtime", "dinnertime")
+    for (const [key, meal] of Object.entries(lookup)) {
+      if (raw.startsWith(key) || key.startsWith(raw)) {
+        student.meals.add(meal);
+        return;
       }
     }
+
+    // 4) Nothing matched
+    unmatched.push({ name: student.name, token: line.trim() });
   }
 
   lines.forEach(line => {
@@ -815,13 +869,13 @@ function parseChat() {
     if (tsMatch) {
       const name = tsMatch[1].trim();
       const firstMsg = tsMatch[2].trim();
-      current = { name, meals: new Set() };
+      current = { name, meals: new Set(), veg: false };
       students.push(current);
       if (firstMsg) processMealLine(firstMsg, current);
     } else if (nameMatch) {
       const name = nameMatch[1].trim();
       const firstMsg = nameMatch[2].trim();
-      current = { name, meals: new Set() };
+      current = { name, meals: new Set(), veg: false };
       students.push(current);
       if (firstMsg) processMealLine(firstMsg, current);
     } else {
@@ -834,8 +888,9 @@ function parseChat() {
   const merged = {};
   students.forEach(s => {
     const key = s.name.toLowerCase().replace(/\s+/g,'');
-    if (!merged[key]) merged[key] = { name: s.name, meals: new Set() };
+    if (!merged[key]) merged[key] = { name: s.name, meals: new Set(), veg: false };
     s.meals.forEach(m => merged[key].meals.add(m));
+    if (s.veg) merged[key].veg = true;
   });
   const result = Object.values(merged);
 
@@ -893,13 +948,14 @@ function renderReport(students, unmatched) {
     return `<tr>
       <td class="num">${i+1}</td>
       <td class="name-cell">${s.name}</td>
+      <td style="text-align:center;font-size:16px">${s.veg ? '<span class="tick tick-yes" style="width:30px;height:30px;font-size:13px">🌿</span>' : '<span class="tick tick-no" style="width:30px;height:30px">—</span>'}</td>
       <td>${tick('breakfast')}</td>
       <td>${tick('lunch')}</td>
       <td>${tick('snack')}</td>
       <td>${tick('dinner')}</td>
       <td>${badges}</td>
     </tr>`;
-  }).join('') : `<tr><td colspan="7" class="no-data">No students parsed</td></tr>`;
+  }).join('') : `<tr><td colspan="8" class="no-data">No students parsed</td></tr>`;
 
   document.getElementById('reportSection').style.display = 'block';
 }
