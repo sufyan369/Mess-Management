@@ -5,140 +5,647 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mess Duty Register</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
-  header { background: #1b5e20; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 20px; font-weight: 600; }
-  header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .container { max-width: 960px; margin: 0 auto; padding: 20px 16px; }
+  :root {
+    --bg: #f8f6fc;
+    --surface: #ffffff;
+    --surface-2: #f2eff8;
+    --primary: #6c3bd9;
+    --primary-light: #8b5cf6;
+    --primary-dark: #4c1d95;
+    --primary-glow: rgba(108,59,217,0.15);
+    --accent: #f59e0b;
+    --accent-light: #fbbf24;
+    --accent-glow: rgba(245,158,11,0.2);
+    --rose: #ec4899;
+    --rose-light: #f472b6;
+    --teal: #14b8a6;
+    --teal-light: #2dd4bf;
+    --text: #1a1035;
+    --text-secondary: #6b5e87;
+    --text-muted: #a094b8;
+    --border: #e8e2f2;
+    --shadow-sm: 0 1px 3px rgba(108,59,217,0.06), 0 1px 2px rgba(108,59,217,0.04);
+    --shadow-md: 0 4px 12px rgba(108,59,217,0.08), 0 2px 6px rgba(108,59,217,0.04);
+    --shadow-lg: 0 8px 30px rgba(108,59,217,0.1), 0 4px 12px rgba(108,59,217,0.06);
+    --shadow-xl: 0 16px 48px rgba(108,59,217,0.12);
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+  }
 
-  .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  .card-title { font-size: 14px; font-weight: 600; color: #1b5e20; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  body {
+    font-family: 'Outfit', 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(ellipse at 10% 20%, rgba(108,59,217,0.04) 0%, transparent 50%),
+                      radial-gradient(ellipse at 90% 80%, rgba(245,158,11,0.03) 0%, transparent 50%);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
 
-  textarea { width: 100%; height: 180px; border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; font-size: 13px; font-family: 'Courier New', monospace; resize: vertical; outline: none; color: #333; background: #fafafa; }
-  textarea:focus { border-color: #1b5e20; background: #fff; }
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  header .brand { display: flex; align-items: center; gap: 12px; }
+  header .logo {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 8px var(--primary-glow);
+  }
+  header h1 { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  header p { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+  header .badge-header {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px var(--accent-glow);
+  }
 
-  .date-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 4px; }
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.04em; }
-  .field input[type="date"] { height: 38px; padding: 0 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
-  .field input[type="date"]:focus { border-color: #1b5e20; }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+  }
 
-  .btn { height: 38px; padding: 0 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
-  .btn-green { background: #1b5e20; color: #fff; }
-  .btn-green:hover { background: #145218; }
-  .btn-outline { background: #fff; color: #1b5e20; border: 1.5px solid #1b5e20; }
-  .btn-outline:hover { background: #f1f8f1; }
-  .btn-red { background: #fff; color: #c62828; border: 1.5px solid #ef9a9a; }
-  .btn-red:hover { background: #fff8f8; }
-  .btn-small { height: 30px; padding: 0 12px; font-size: 12px; border-radius: 6px; }
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    font-family: inherit;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .tab:hover { color: var(--primary); background: var(--surface-2); }
+  .tab.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    box-shadow: 0 4px 12px var(--primary-glow);
+  }
 
-  .meal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .meal-card { border-radius: 10px; padding: 16px; text-align: center; }
-  .meal-card.breakfast { background: #fff8e1; border: 1.5px solid #ffe082; }
-  .meal-card.lunch { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
-  .meal-card.snack { background: #fce4ec; border: 1.5px solid #f48fb1; }
-  .meal-card.dinner { background: #e8eaf6; border: 1.5px solid #9fa8da; }
-  .meal-card .icon { font-size: 22px; margin-bottom: 4px; }
-  .meal-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #555; }
-  .meal-card .count { font-size: 36px; font-weight: 700; line-height: 1.1; margin: 4px 0; }
-  .meal-card.breakfast .count { color: #f57f17; }
-  .meal-card.lunch .count { color: #2e7d32; }
-  .meal-card.snack .count { color: #ad1457; }
-  .meal-card.dinner .count { color: #283593; }
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--surface-2);
+  }
 
-  .summary-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-  .chip { background: #f5f5f5; border-radius: 20px; padding: 6px 14px; font-size: 13px; color: #444; border: 1px solid #e0e0e0; }
-  .chip strong { color: #1b5e20; }
+  /* TEXTAREA */
+  textarea {
+    width: 100%;
+    height: 180px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    resize: vertical;
+    outline: none;
+    color: var(--text);
+    background: var(--surface);
+    transition: all 0.25s ease;
+    line-height: 1.7;
+  }
+  textarea:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+  }
+  textarea::placeholder { color: var(--text-muted); }
 
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #f5f5f5; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #666; border-bottom: 2px solid #e0e0e0; }
-  td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  /* DATE ROW */
+  .date-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .field input[type="date"] {
+    height: 40px;
+    padding: 0 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    background: var(--surface);
+    transition: all 0.25s ease;
+    color: var(--text);
+  }
+  .field input[type="date"]:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+  }
+
+  /* BUTTONS */
+  .btn {
+    height: 40px;
+    padding: 0 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.94); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    box-shadow: 0 4px 14px var(--primary-glow);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 6px 24px var(--primary-glow);
+    transform: translateY(-2px);
+  }
+
+  .btn-accent {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: #fff;
+    box-shadow: 0 4px 14px var(--accent-glow);
+  }
+  .btn-accent:hover {
+    box-shadow: 0 6px 24px var(--accent-glow);
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--border);
+  }
+  .btn-ghost:hover {
+    background: var(--surface-2);
+    border-color: var(--primary-light);
+    color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--rose);
+    border: 2px solid #f1d5e7;
+  }
+  .btn-danger:hover {
+    background: #fdf2f8;
+    border-color: var(--rose);
+    transform: translateY(-2px);
+  }
+
+  .btn-sm { height: 34px; padding: 0 14px; font-size: 12px; border-radius: 8px; }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* MEAL GRID */
+  .meal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .meal-card {
+    border-radius: var(--radius);
+    padding: 20px 14px 16px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+  }
+  .meal-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 0 0 10px 10px;
+    transition: height 0.3s ease;
+  }
+  .meal-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--shadow-lg) !important;
+  }
+  .meal-card:hover::after { height: 6px; }
+  .meal-card .icon { font-size: 32px; margin-bottom: 8px; display: block; }
+  .meal-card .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .meal-card .count {
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 6px 0 2px;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    letter-spacing: -2px;
+  }
+  .meal-card:hover .count { transform: scale(1.12); }
+
+  .meal-card.breakfast {
+    background: linear-gradient(135deg, #fef9e7, #fef3cd);
+    border-color: #fde68a;
+    box-shadow: 0 2px 12px rgba(245,158,11,0.1);
+  }
+  .meal-card.breakfast::after { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .meal-card.breakfast .count { color: #d97706; }
+
+  .meal-card.lunch {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-color: #6ee7b7;
+    box-shadow: 0 2px 12px rgba(20,184,166,0.1);
+  }
+  .meal-card.lunch::after { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+  .meal-card.lunch .count { color: #0d9488; }
+
+  .meal-card.snack {
+    background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+    border-color: #f9a8d4;
+    box-shadow: 0 2px 12px rgba(236,72,153,0.1);
+  }
+  .meal-card.snack::after { background: linear-gradient(90deg, #ec4899, #f472b6); }
+  .meal-card.snack .count { color: #db2777; }
+
+  .meal-card.dinner {
+    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    border-color: #a5b4fc;
+    box-shadow: 0 2px 12px rgba(108,59,217,0.1);
+  }
+  .meal-card.dinner::after { background: linear-gradient(90deg, #6c3bd9, #8b5cf6); }
+  .meal-card.dinner .count { color: #4c1d95; }
+
+  /* SUMMARY STRIP */
+  .summary-strip {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .chip {
+    background: var(--surface-2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    transition: all 0.25s ease;
+  }
+  .chip:hover {
+    background: var(--surface);
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+  }
+  .chip strong { color: var(--primary); font-weight: 700; }
+
+  /* TABLE */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  th {
+    background: var(--surface-2);
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+  }
+  th:first-child { border-radius: 11px 0 0 0; }
+  th:last-child { border-radius: 0 11px 0 0; }
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--surface-2);
+    vertical-align: middle;
+    transition: all 0.15s ease;
+  }
+  tr:last-child td:first-child { border-radius: 0 0 0 11px; }
+  tr:last-child td:last-child { border-radius: 0 0 11px 0; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #fafff9; }
+  tbody tr {
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    cursor: default;
+  }
+  tbody tr:hover {
+    background: var(--surface-2);
+    transform: scale(1.005);
+  }
+  td.num { color: var(--text-muted); font-size: 12px; font-weight: 500; }
+  td.name-cell { font-weight: 600; color: var(--text); }
 
-  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-b { background: #fff8e1; color: #e65100; }
-  .badge-l { background: #e8f5e9; color: #1b5e20; }
-  .badge-s { background: #fce4ec; color: #880e4f; }
-  .badge-d { background: #e8eaf6; color: #1a237e; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    letter-spacing: 0.2px;
+  }
+  .badge:hover { transform: scale(1.08); filter: brightness(1.05); }
+  .badge-b { background: #fef3cd; color: #92400e; }
+  .badge-l { background: #d1fae5; color: #065f46; }
+  .badge-s { background: #fce7f3; color: #9d174d; }
+  .badge-d { background: #e0e7ff; color: #3730a3; }
 
-  .tick { display: inline-block; width: 22px; height: 22px; border-radius: 5px; text-align: center; line-height: 22px; font-size: 13px; font-weight: 700; }
-  .tick-yes { background: #e8f5e9; color: #2e7d32; }
-  .tick-no { background: #f5f5f5; color: #bbb; font-size: 10px; }
+  .tick {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .tick-yes {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    box-shadow: 0 2px 8px rgba(20,184,166,0.2);
+  }
+  .tick-yes:hover { transform: scale(1.15) rotate(4deg); }
+  .tick-no {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 11px;
+  }
 
-  .unmatched-box { background: #fff3e0; border: 1.5px solid #ffcc80; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-  .unmatched-box h4 { font-size: 13px; color: #e65100; font-weight: 600; margin-bottom: 8px; }
-  .unmatched-item { font-size: 12px; color: #555; background: #fff; border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; font-family: 'Courier New', monospace; }
-  .unmatched-item strong { color: #bf360c; }
+  /* UNMATCHED */
+  .unmatched-box {
+    background: linear-gradient(135deg, #fffbeb, #fef3cd);
+    border: 2px solid #fde68a;
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    animation: slideDown 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 2px 12px rgba(245,158,11,0.1);
+  }
+  .unmatched-box h4 {
+    font-size: 13px;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .unmatched-item {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(253,230,138,0.5);
+  }
+  .unmatched-item strong { color: #c2410c; font-weight: 600; }
 
-  .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-  .tab { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid #ddd; background: #fff; color: #555; }
-  .tab.active { background: #1b5e20; color: #fff; border-color: #1b5e20; }
-
-  .alias-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  /* ALIASES */
+  .alias-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 13px;
+    transition: all 0.25s ease;
+    border-bottom: 1px solid var(--surface-2);
+  }
   .alias-row:last-child { border-bottom: none; }
-  .alias-tag { background: #e8f5e9; color: #1b5e20; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-  .alias-list { color: #888; font-size: 12px; }
+  .alias-row:hover {
+    padding-left: 6px;
+    padding-right: 6px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    margin: 0 -6px;
+    padding: 10px 0;
+  }
+  .alias-tag {
+    background: var(--surface-2);
+    color: var(--primary);
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
 
   #reportSection { display: none; }
 
-  .help-text { font-size: 12px; color: #888; margin-top: 6px; line-height: 1.6; }
-  .help-text code { background: #f5f5f5; padding: 1px 5px; border-radius: 4px; font-family: 'Courier New', monospace; color: #333; }
+  .help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    line-height: 1.7;
+  }
+  .help-text code {
+    background: var(--surface-2);
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 11px;
+  }
 
-  .no-data { text-align: center; padding: 30px; color: #aaa; font-size: 14px; }
+  .no-data {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .no-data::before {
+    content: '📋';
+    display: block;
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes countPop {
+    0% { opacity: 0; transform: scale(0.5); }
+    60% { transform: scale(1.15); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .meal-card .count { animation: countPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  #reportSection { animation: fadeIn 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+
+  /* INPUT FOCUS RING */
+  input:focus, select:focus, textarea:focus { outline: none; }
 
   @media print {
-    header, .card:first-child, .tabs, .btn, .unmatched-box { display: none !important; }
+    header, .card:first-child, .tabs, .btn, .unmatched-box, .btn-group { display: none !important; }
     body { background: #fff; }
     .card { box-shadow: none; border: 1px solid #ddd; }
+    #reportSection { animation: none; }
+    .meal-grid { break-inside: avoid; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <h1>🍽️ Mess Duty Register</h1>
-    <p>Paste WhatsApp chat → get instant meal counts</p>
+  <div class="brand">
+    <div class="logo">🍽</div>
+    <div>
+      <h1>Mess Duty</h1>
+      <p>Paste it Instead Of Counting</p>
+    </div>
   </div>
+  <span class="badge-header">v2.0</span>
 </header>
 
 <div class="container">
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('parse')">Parse Chat</div>
-    <div class="tab" onclick="switchTab('aliases')">Meal Keywords</div>
+    <button class="tab active" onclick="switchTab('parse')">
+      <span>📋</span> Parse Chat
+    </button>
+    <button class="tab" onclick="switchTab('aliases')">
+      <span>🔤</span> Keywords
+    </button>
   </div>
 
   <!-- PARSE TAB -->
   <div id="parseTab">
     <div class="card">
-      <div class="card-title">📋 Paste WhatsApp Chat</div>
-      <div class="date-row" style="margin-bottom:12px">
+      <div class="card-title"><span>📋</span> Paste WhatsApp Chat</div>
+      <div class="date-row">
         <div class="field">
-          <label>Date (for report)</label>
+          <label>Report Date</label>
           <input type="date" id="reportDate" />
         </div>
-        <button class="btn btn-outline btn-small" onclick="setToday()">Today</button>
+        <button class="btn btn-ghost btn-sm" onclick="setToday()">Today</button>
       </div>
       <textarea id="chatInput" placeholder="Paste your WhatsApp chat here..."></textarea>
       <div class="help-text">
-        Supports formats like: <code>B</code> <code>Breakfast</code> <code>brkfst</code> <code>Ln</code> <code>Lunch</code> <code>S</code> <code>Snack</code> <code>D</code> <code>Dinner</code> — add more in the <strong>Meal Keywords</strong> tab.
+        Recognises: <code>B</code> <code>Breakfast</code> <code>brkfst</code> <code>Ln</code> <code>Lunch</code>
+        <code>S</code> <code>Snack</code> <code>D</code> <code>Dinner</code>
+        &mdash; add custom keywords in the <strong>Keywords</strong> tab
       </div>
-      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-        <button class="btn btn-green" onclick="parseChat()">Parse &amp; Count</button>
-        <button class="btn btn-outline" onclick="clearAll()">Clear</button>
-        <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="parseChat()">Parse &amp; Count</button>
+        <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+        <button class="btn btn-ghost" onclick="window.print()">🖨️ Print</button>
       </div>
     </div>
 
     <div id="reportSection">
-
       <div class="card">
-        <div class="card-title" id="reportTitle">📅 Report</div>
+        <div class="card-title" id="reportTitle"><span>📅</span> Report</div>
         <div class="meal-grid" id="mealGrid"></div>
         <div class="summary-strip" id="summaryStrip"></div>
       </div>
@@ -146,8 +653,8 @@
       <div id="unmatchedBox"></div>
 
       <div class="card">
-        <div class="card-title">👥 Student-wise Breakdown</div>
-        <div style="overflow-x:auto">
+        <div class="card-title"><span>👥</span> Student-wise Breakdown</div>
+        <div class="table-wrap">
           <table>
             <thead>
               <tr>
@@ -164,45 +671,45 @@
           </table>
         </div>
       </div>
-
     </div>
   </div>
 
   <!-- ALIASES TAB -->
   <div id="aliasesTab" style="display:none">
     <div class="card">
-      <div class="card-title">🔤 Meal Keywords</div>
-      <p style="font-size:13px;color:#666;margin-bottom:16px">These are the words/letters the system recognises per meal. You can add your own aliases.</p>
+      <div class="card-title"><span>🔤</span> Meal Keywords</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:18px;line-height:1.7">
+        Words the system recognises per meal. Add your own shortcuts for your group&rsquo;s chat style.
+      </p>
 
       <div id="aliasDisplay"></div>
 
-      <div style="margin-top:16px;background:#f9f9f9;border-radius:8px;padding:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:#333">Add custom keyword</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div style="margin-top:18px;background:var(--surface-2);border-radius:var(--radius);padding:18px;border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)">Add Custom Keyword</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
           <div class="field">
-            <label>Keyword (what people type)</label>
-            <input type="text" id="newAlias" placeholder="e.g. bkf" style="height:36px;padding:0 10px;border:1.5px solid #ddd;border-radius:7px;font-size:13px;outline:none;width:160px" />
+            <label>Keyword</label>
+            <input type="text" id="newAlias" placeholder="e.g. bkf" style="height:38px;padding:0 12px;border:2px solid var(--border);border-radius:9px;font-size:13px;outline:none;width:160px;font-family:inherit;background:var(--surface);transition:all 0.25s ease;color:var(--text)" />
           </div>
           <div class="field">
-            <label>Maps to meal</label>
-            <select id="newAliasMeal" style="height:36px;padding:0 10px;border:1.5px solid #ddd;border-radius:7px;font-size:13px;outline:none;background:#fff">
+            <label>Maps to</label>
+            <select id="newAliasMeal" style="height:38px;padding:0 12px;border:2px solid var(--border);border-radius:9px;font-size:13px;outline:none;background:var(--surface);font-family:inherit;transition:all 0.25s ease;color:var(--text)">
               <option value="breakfast">Breakfast</option>
               <option value="lunch">Lunch</option>
               <option value="snack">Snack</option>
               <option value="dinner">Dinner</option>
             </select>
           </div>
-          <button class="btn btn-green btn-small" onclick="addAlias()">Add</button>
+          <button class="btn btn-primary btn-sm" onclick="addAlias()">Add</button>
         </div>
       </div>
-      <button class="btn btn-red btn-small" style="margin-top:12px" onclick="resetAliases()">Reset to defaults</button>
+      <button class="btn btn-danger btn-sm" style="margin-top:14px" onclick="resetAliases()">Reset to defaults</button>
     </div>
   </div>
 
 </div>
 
 <script>
-// Default meal aliases (all lowercase for matching)
 const DEFAULT_ALIASES = {
   breakfast: ['b','breakfast','brkfst','brkfast','bfast','b/fast','morning','brk','bk'],
   lunch:     ['l','ln','lunch','lnch','lch','noon','afternon','afternoon'],
@@ -231,15 +738,15 @@ function switchTab(tab) {
 
 function renderAliases() {
   const aliases = loadAliases();
-  const colors = { breakfast:'#fff8e1', lunch:'#e8f5e9', snack:'#fce4ec', dinner:'#e8eaf6' };
-  const textColors = { breakfast:'#e65100', lunch:'#1b5e20', snack:'#880e4f', dinner:'#1a237e' };
+  const bgColors = { breakfast:'#fef3cd', lunch:'#d1fae5', snack:'#fce7f3', dinner:'#e0e7ff' };
+  const textColors = { breakfast:'#92400e', lunch:'#065f46', snack:'#9d174d', dinner:'#3730a3' };
   document.getElementById('aliasDisplay').innerHTML = Object.entries(aliases).map(([meal, words]) => `
     <div class="alias-row">
-      <span class="alias-tag" style="background:${colors[meal]};color:${textColors[meal]};min-width:80px;text-align:center">${meal.charAt(0).toUpperCase()+meal.slice(1)}</span>
-      <div style="flex:1;display:flex;flex-wrap:wrap;gap:5px">
-        ${words.map(w => `<span style="background:#f0f0f0;border-radius:4px;padding:2px 7px;font-size:12px;font-family:'Courier New',monospace">${w}</span>`).join('')}
+      <span class="alias-tag" style="background:${bgColors[meal]};color:${textColors[meal]}">${meal.charAt(0).toUpperCase()+meal.slice(1)}</span>
+      <div style="flex:1;display:flex;flex-wrap:wrap;gap:4px">
+        ${words.map(w => `<span style="background:var(--surface);border-radius:5px;padding:2px 8px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);border:1px solid var(--border);transition:all 0.2s ease">${w}</span>`).join('')}
       </div>
-      <button class="btn btn-red btn-small" onclick="removeLastAlias('${meal}')">−</button>
+      <button class="btn btn-danger btn-sm" onclick="removeLastAlias('${meal}')">&minus;</button>
     </div>
   `).join('');
 }
@@ -267,22 +774,18 @@ function parseChat() {
   if (!raw) { alert('Please paste the WhatsApp chat first.'); return; }
 
   const aliases = loadAliases();
-  // Build a lookup: word -> meal
   const lookup = {};
   Object.entries(aliases).forEach(([meal, words]) => {
     words.forEach(w => { lookup[w.toLowerCase()] = meal; });
   });
 
-  // Split into lines
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
   const students = [];
   let current = null;
   const unmatched = [];
 
-  // Regex to detect WhatsApp timestamp lines like [11:03 am, 02/06/2026] Name: message
   const tsPattern = /^\[.*?\]\s*([^:]+):\s*(.*)$/;
-  // Detect lines that are just a name followed by colon (no timestamp)
   const namePattern = /^([A-Za-z][A-Za-z\s]{1,30}):\s*(.*)$/;
 
   function processMealLine(line, student) {
@@ -291,7 +794,6 @@ function parseChat() {
     if (lookup[token]) {
       student.meals.add(lookup[token]);
     } else {
-      // try partial match
       let matched = false;
       for (const [key, meal] of Object.entries(lookup)) {
         if (token.startsWith(key) || key.startsWith(token)) {
@@ -329,7 +831,6 @@ function parseChat() {
     }
   });
 
-  // Deduplicate by name (keep union of meals)
   const merged = {};
   students.forEach(s => {
     const key = s.name.toLowerCase().replace(/\s+/g,'');
@@ -345,7 +846,7 @@ function renderReport(students, unmatched) {
   const dateVal = document.getElementById('reportDate').value;
   const dateStr = dateVal ? (([y,m,d]) => `${d}/${m}/${y}`)(dateVal.split('-')) : 'Today';
 
-  document.getElementById('reportTitle').textContent = `📅 Report — ${dateStr}`;
+  document.getElementById('reportTitle').innerHTML = `<span>📅</span> Report &mdash; ${dateStr}`;
 
   const counts = { breakfast:0, lunch:0, snack:0, dinner:0 };
   students.forEach(s => s.meals.forEach(m => { if(counts[m]!==undefined) counts[m]++; }));
@@ -353,7 +854,7 @@ function renderReport(students, unmatched) {
   const icons = { breakfast:'☀️', lunch:'🍱', snack:'🍵', dinner:'🌙' };
   document.getElementById('mealGrid').innerHTML = Object.entries(counts).map(([meal, n]) => `
     <div class="meal-card ${meal}">
-      <div class="icon">${icons[meal]}</div>
+      <span class="icon">${icons[meal]}</span>
       <div class="label">${meal.charAt(0).toUpperCase()+meal.slice(1)}</div>
       <div class="count">${n}</div>
     </div>
@@ -364,36 +865,34 @@ function renderReport(students, unmatched) {
   document.getElementById('summaryStrip').innerHTML = `
     <div class="chip">Total students: <strong>${total}</strong></div>
     <div class="chip">Total meals: <strong>${totalMeals}</strong></div>
-    <div class="chip">Breakfast: <strong>${counts.breakfast}</strong></div>
-    <div class="chip">Lunch: <strong>${counts.lunch}</strong></div>
-    <div class="chip">Snack: <strong>${counts.snack}</strong></div>
-    <div class="chip">Dinner: <strong>${counts.dinner}</strong></div>
+    <div class="chip">☀️ <strong>${counts.breakfast}</strong></div>
+    <div class="chip">🍱 <strong>${counts.lunch}</strong></div>
+    <div class="chip">🍵 <strong>${counts.snack}</strong></div>
+    <div class="chip">🌙 <strong>${counts.dinner}</strong></div>
   `;
 
-  // Unmatched
   if (unmatched.length > 0) {
     document.getElementById('unmatchedBox').innerHTML = `
       <div class="unmatched-box">
-        <h4>⚠️ ${unmatched.length} unrecognised keyword(s) — add them in Meal Keywords tab</h4>
-        ${unmatched.map(u => `<div class="unmatched-item"><strong>${u.name}:</strong> "${u.token}" — not recognised</div>`).join('')}
+        <h4>⚠️ ${unmatched.length} unrecognised keyword(s) &mdash; add them in Keywords tab</h4>
+        ${unmatched.map(u => `<div class="unmatched-item"><strong>${u.name}:</strong> "${u.token}"</div>`).join('')}
       </div>
     `;
   } else {
     document.getElementById('unmatchedBox').innerHTML = '';
   }
 
-  // Student table
   document.getElementById('studentTable').innerHTML = students.length ? students.map((s,i) => {
     const mealList = ['breakfast','lunch','snack','dinner'];
     const tick = m => s.meals.has(m)
-      ? `<span class="tick tick-yes">✓</span>`
-      : `<span class="tick tick-no">—</span>`;
+      ? `<span class="tick tick-yes">&#10003;</span>`
+      : `<span class="tick tick-no">&mdash;</span>`;
     const badges = mealList.filter(m => s.meals.has(m)).map(m =>
       `<span class="badge badge-${m[0]}">${m.charAt(0).toUpperCase()+m.slice(1)}</span>`
     ).join(' ');
     return `<tr>
-      <td style="color:#aaa;font-size:12px">${i+1}</td>
-      <td style="font-weight:600">${s.name}</td>
+      <td class="num">${i+1}</td>
+      <td class="name-cell">${s.name}</td>
       <td>${tick('breakfast')}</td>
       <td>${tick('lunch')}</td>
       <td>${tick('snack')}</td>
