@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mess Duty Register</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+
+  header { background: #1b5e20; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 20px 16px; }
+
+  .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card-title { font-size: 14px; font-weight: 600; color: #1b5e20; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  textarea { width: 100%; height: 180px; border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; font-size: 13px; font-family: 'Courier New', monospace; resize: vertical; outline: none; color: #333; background: #fafafa; }
+  textarea:focus { border-color: #1b5e20; background: #fff; }
+
+  .date-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 4px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.04em; }
+  .field input[type="date"] { height: 38px; padding: 0 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+  .field input[type="date"]:focus { border-color: #1b5e20; }
+
+  .btn { height: 38px; padding: 0 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-green { background: #1b5e20; color: #fff; }
+  .btn-green:hover { background: #145218; }
+  .btn-outline { background: #fff; color: #1b5e20; border: 1.5px solid #1b5e20; }
+  .btn-outline:hover { background: #f1f8f1; }
+  .btn-red { background: #fff; color: #c62828; border: 1.5px solid #ef9a9a; }
+  .btn-red:hover { background: #fff8f8; }
+  .btn-small { height: 30px; padding: 0 12px; font-size: 12px; border-radius: 6px; }
+
+  .meal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .meal-card { border-radius: 10px; padding: 16px; text-align: center; }
+  .meal-card.breakfast { background: #fff8e1; border: 1.5px solid #ffe082; }
+  .meal-card.lunch { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+  .meal-card.snack { background: #fce4ec; border: 1.5px solid #f48fb1; }
+  .meal-card.dinner { background: #e8eaf6; border: 1.5px solid #9fa8da; }
+  .meal-card .icon { font-size: 22px; margin-bottom: 4px; }
+  .meal-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #555; }
+  .meal-card .count { font-size: 36px; font-weight: 700; line-height: 1.1; margin: 4px 0; }
+  .meal-card.breakfast .count { color: #f57f17; }
+  .meal-card.lunch .count { color: #2e7d32; }
+  .meal-card.snack .count { color: #ad1457; }
+  .meal-card.dinner .count { color: #283593; }
+
+  .summary-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip { background: #f5f5f5; border-radius: 20px; padding: 6px 14px; font-size: 13px; color: #444; border: 1px solid #e0e0e0; }
+  .chip strong { color: #1b5e20; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f5f5f5; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #666; border-bottom: 2px solid #e0e0e0; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafff9; }
+
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-b { background: #fff8e1; color: #e65100; }
+  .badge-l { background: #e8f5e9; color: #1b5e20; }
+  .badge-s { background: #fce4ec; color: #880e4f; }
+  .badge-d { background: #e8eaf6; color: #1a237e; }
+
+  .tick { display: inline-block; width: 22px; height: 22px; border-radius: 5px; text-align: center; line-height: 22px; font-size: 13px; font-weight: 700; }
+  .tick-yes { background: #e8f5e9; color: #2e7d32; }
+  .tick-no { background: #f5f5f5; color: #bbb; font-size: 10px; }
+
+  .unmatched-box { background: #fff3e0; border: 1.5px solid #ffcc80; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
+  .unmatched-box h4 { font-size: 13px; color: #e65100; font-weight: 600; margin-bottom: 8px; }
+  .unmatched-item { font-size: 12px; color: #555; background: #fff; border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; font-family: 'Courier New', monospace; }
+  .unmatched-item strong { color: #bf360c; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .tab { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid #ddd; background: #fff; color: #555; }
+  .tab.active { background: #1b5e20; color: #fff; border-color: #1b5e20; }
+
+  .alias-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .alias-row:last-child { border-bottom: none; }
+  .alias-tag { background: #e8f5e9; color: #1b5e20; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .alias-list { color: #888; font-size: 12px; }
+
+  #reportSection { display: none; }
+
+  .help-text { font-size: 12px; color: #888; margin-top: 6px; line-height: 1.6; }
+  .help-text code { background: #f5f5f5; padding: 1px 5px; border-radius: 4px; font-family: 'Courier New', monospace; color: #333; }
+
+  .no-data { text-align: center; padding: 30px; color: #aaa; font-size: 14px; }
+
+  @media print {
+    header, .card:first-child, .tabs, .btn, .unmatched-box { display: none !important; }
+    body { background: #fff; }
+    .card { box-shadow: none; border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🍽️ Mess Duty Register</h1>
+    <p>Paste WhatsApp chat → get instant meal counts</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('parse')">Parse Chat</div>
+    <div class="tab" onclick="switchTab('aliases')">Meal Keywords</div>
+  </div>
+
+  <!-- PARSE TAB -->
+  <div id="parseTab">
+    <div class="card">
+      <div class="card-title">📋 Paste WhatsApp Chat</div>
+      <div class="date-row" style="margin-bottom:12px">
+        <div class="field">
+          <label>Date (for report)</label>
+          <input type="date" id="reportDate" />
+        </div>
+        <button class="btn btn-outline btn-small" onclick="setToday()">Today</button>
+      </div>
+      <textarea id="chatInput" placeholder="Paste your WhatsApp chat here..."></textarea>
+      <div class="help-text">
+        Supports formats like: <code>B</code> <code>Breakfast</code> <code>brkfst</code> <code>Ln</code> <code>Lunch</code> <code>S</code> <code>Snack</code> <code>D</code> <code>Dinner</code> — add more in the <strong>Meal Keywords</strong> tab.
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-green" onclick="parseChat()">Parse &amp; Count</button>
+        <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+      </div>
+    </div>
+
+    <div id="reportSection">
+
+      <div class="card">
+        <div class="card-title" id="reportTitle">📅 Report</div>
+        <div class="meal-grid" id="mealGrid"></div>
+        <div class="summary-strip" id="summaryStrip"></div>
+      </div>
+
+      <div id="unmatchedBox"></div>
+
+      <div class="card">
+        <div class="card-title">👥 Student-wise Breakdown</div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Breakfast</th>
+                <th>Lunch</th>
+                <th>Snack</th>
+                <th>Dinner</th>
+                <th>Meals</th>
+              </tr>
+            </thead>
+            <tbody id="studentTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ALIASES TAB -->
+  <div id="aliasesTab" style="display:none">
+    <div class="card">
+      <div class="card-title">🔤 Meal Keywords</div>
+      <p style="font-size:13px;color:#666;margin-bottom:16px">These are the words/letters the system recognises per meal. You can add your own aliases.</p>
+
+      <div id="aliasDisplay"></div>
+
+      <div style="margin-top:16px;background:#f9f9f9;border-radius:8px;padding:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:#333">Add custom keyword</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div class="field">
+            <label>Keyword (what people type)</label>
+            <input type="text" id="newAlias" placeholder="e.g. bkf" style="height:36px;padding:0 10px;border:1.5px solid #ddd;border-radius:7px;font-size:13px;outline:none;width:160px" />
+          </div>
+          <div class="field">
+            <label>Maps to meal</label>
+            <select id="newAliasMeal" style="height:36px;padding:0 10px;border:1.5px solid #ddd;border-radius:7px;font-size:13px;outline:none;background:#fff">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="snack">Snack</option>
+              <option value="dinner">Dinner</option>
+            </select>
+          </div>
+          <button class="btn btn-green btn-small" onclick="addAlias()">Add</button>
+        </div>
+      </div>
+      <button class="btn btn-red btn-small" style="margin-top:12px" onclick="resetAliases()">Reset to defaults</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Default meal aliases (all lowercase for matching)
+const DEFAULT_ALIASES = {
+  breakfast: ['b','breakfast','brkfst','brkfast','bfast','b/fast','morning','brk','bk'],
+  lunch:     ['l','ln','lunch','lnch','lch','noon','afternon','afternoon'],
+  snack:     ['s','sn','snack','snacks','eve','evening','evng','teatime','tea'],
+  dinner:    ['d','dn','dinner','dnr','dnnr','night','nite','supper']
+};
+
+function loadAliases() {
+  const stored = localStorage.getItem('messAliases');
+  return stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_ALIASES));
+}
+function saveAliases(a) { localStorage.setItem('messAliases', JSON.stringify(a)); }
+function resetAliases() { saveAliases(JSON.parse(JSON.stringify(DEFAULT_ALIASES))); renderAliases(); }
+
+function setToday() {
+  document.getElementById('reportDate').valueAsDate = new Date();
+}
+setToday();
+
+function switchTab(tab) {
+  document.getElementById('parseTab').style.display = tab==='parse' ? 'block' : 'none';
+  document.getElementById('aliasesTab').style.display = tab==='aliases' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='parse' && i===0) || (tab==='aliases' && i===1)));
+  if (tab==='aliases') renderAliases();
+}
+
+function renderAliases() {
+  const aliases = loadAliases();
+  const colors = { breakfast:'#fff8e1', lunch:'#e8f5e9', snack:'#fce4ec', dinner:'#e8eaf6' };
+  const textColors = { breakfast:'#e65100', lunch:'#1b5e20', snack:'#880e4f', dinner:'#1a237e' };
+  document.getElementById('aliasDisplay').innerHTML = Object.entries(aliases).map(([meal, words]) => `
+    <div class="alias-row">
+      <span class="alias-tag" style="background:${colors[meal]};color:${textColors[meal]};min-width:80px;text-align:center">${meal.charAt(0).toUpperCase()+meal.slice(1)}</span>
+      <div style="flex:1;display:flex;flex-wrap:wrap;gap:5px">
+        ${words.map(w => `<span style="background:#f0f0f0;border-radius:4px;padding:2px 7px;font-size:12px;font-family:'Courier New',monospace">${w}</span>`).join('')}
+      </div>
+      <button class="btn btn-red btn-small" onclick="removeLastAlias('${meal}')">−</button>
+    </div>
+  `).join('');
+}
+
+function addAlias() {
+  const val = document.getElementById('newAlias').value.trim().toLowerCase();
+  const meal = document.getElementById('newAliasMeal').value;
+  if (!val) return;
+  const aliases = loadAliases();
+  if (!aliases[meal].includes(val)) aliases[meal].push(val);
+  saveAliases(aliases);
+  document.getElementById('newAlias').value = '';
+  renderAliases();
+}
+function removeLastAlias(meal) {
+  const aliases = loadAliases();
+  if (aliases[meal].length > 1) aliases[meal].pop();
+  saveAliases(aliases);
+  renderAliases();
+}
+
+// ---- PARSER ----
+function parseChat() {
+  const raw = document.getElementById('chatInput').value.trim();
+  if (!raw) { alert('Please paste the WhatsApp chat first.'); return; }
+
+  const aliases = loadAliases();
+  // Build a lookup: word -> meal
+  const lookup = {};
+  Object.entries(aliases).forEach(([meal, words]) => {
+    words.forEach(w => { lookup[w.toLowerCase()] = meal; });
+  });
+
+  // Split into lines
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+  const students = [];
+  let current = null;
+  const unmatched = [];
+
+  // Regex to detect WhatsApp timestamp lines like [11:03 am, 02/06/2026] Name: message
+  const tsPattern = /^\[.*?\]\s*([^:]+):\s*(.*)$/;
+  // Detect lines that are just a name followed by colon (no timestamp)
+  const namePattern = /^([A-Za-z][A-Za-z\s]{1,30}):\s*(.*)$/;
+
+  function processMealLine(line, student) {
+    const token = line.trim().toLowerCase().replace(/[^a-z0-9\/]/g, '');
+    if (!token) return;
+    if (lookup[token]) {
+      student.meals.add(lookup[token]);
+    } else {
+      // try partial match
+      let matched = false;
+      for (const [key, meal] of Object.entries(lookup)) {
+        if (token.startsWith(key) || key.startsWith(token)) {
+          student.meals.add(meal);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched && token.length > 0) {
+        unmatched.push({ name: student.name, token: line.trim() });
+      }
+    }
+  }
+
+  lines.forEach(line => {
+    const tsMatch = line.match(tsPattern);
+    const nameMatch = !tsMatch && line.match(namePattern);
+
+    if (tsMatch) {
+      const name = tsMatch[1].trim();
+      const firstMsg = tsMatch[2].trim();
+      current = { name, meals: new Set() };
+      students.push(current);
+      if (firstMsg) processMealLine(firstMsg, current);
+    } else if (nameMatch) {
+      const name = nameMatch[1].trim();
+      const firstMsg = nameMatch[2].trim();
+      current = { name, meals: new Set() };
+      students.push(current);
+      if (firstMsg) processMealLine(firstMsg, current);
+    } else {
+      if (current) {
+        processMealLine(line, current);
+      }
+    }
+  });
+
+  // Deduplicate by name (keep union of meals)
+  const merged = {};
+  students.forEach(s => {
+    const key = s.name.toLowerCase().replace(/\s+/g,'');
+    if (!merged[key]) merged[key] = { name: s.name, meals: new Set() };
+    s.meals.forEach(m => merged[key].meals.add(m));
+  });
+  const result = Object.values(merged);
+
+  renderReport(result, unmatched);
+}
+
+function renderReport(students, unmatched) {
+  const dateVal = document.getElementById('reportDate').value;
+  const dateStr = dateVal ? (([y,m,d]) => `${d}/${m}/${y}`)(dateVal.split('-')) : 'Today';
+
+  document.getElementById('reportTitle').textContent = `📅 Report — ${dateStr}`;
+
+  const counts = { breakfast:0, lunch:0, snack:0, dinner:0 };
+  students.forEach(s => s.meals.forEach(m => { if(counts[m]!==undefined) counts[m]++; }));
+
+  const icons = { breakfast:'☀️', lunch:'🍱', snack:'🍵', dinner:'🌙' };
+  document.getElementById('mealGrid').innerHTML = Object.entries(counts).map(([meal, n]) => `
+    <div class="meal-card ${meal}">
+      <div class="icon">${icons[meal]}</div>
+      <div class="label">${meal.charAt(0).toUpperCase()+meal.slice(1)}</div>
+      <div class="count">${n}</div>
+    </div>
+  `).join('');
+
+  const total = students.length;
+  const totalMeals = Object.values(counts).reduce((a,b)=>a+b,0);
+  document.getElementById('summaryStrip').innerHTML = `
+    <div class="chip">Total students: <strong>${total}</strong></div>
+    <div class="chip">Total meals: <strong>${totalMeals}</strong></div>
+    <div class="chip">Breakfast: <strong>${counts.breakfast}</strong></div>
+    <div class="chip">Lunch: <strong>${counts.lunch}</strong></div>
+    <div class="chip">Snack: <strong>${counts.snack}</strong></div>
+    <div class="chip">Dinner: <strong>${counts.dinner}</strong></div>
+  `;
+
+  // Unmatched
+  if (unmatched.length > 0) {
+    document.getElementById('unmatchedBox').innerHTML = `
+      <div class="unmatched-box">
+        <h4>⚠️ ${unmatched.length} unrecognised keyword(s) — add them in Meal Keywords tab</h4>
+        ${unmatched.map(u => `<div class="unmatched-item"><strong>${u.name}:</strong> "${u.token}" — not recognised</div>`).join('')}
+      </div>
+    `;
+  } else {
+    document.getElementById('unmatchedBox').innerHTML = '';
+  }
+
+  // Student table
+  document.getElementById('studentTable').innerHTML = students.length ? students.map((s,i) => {
+    const mealList = ['breakfast','lunch','snack','dinner'];
+    const tick = m => s.meals.has(m)
+      ? `<span class="tick tick-yes">✓</span>`
+      : `<span class="tick tick-no">—</span>`;
+    const badges = mealList.filter(m => s.meals.has(m)).map(m =>
+      `<span class="badge badge-${m[0]}">${m.charAt(0).toUpperCase()+m.slice(1)}</span>`
+    ).join(' ');
+    return `<tr>
+      <td style="color:#aaa;font-size:12px">${i+1}</td>
+      <td style="font-weight:600">${s.name}</td>
+      <td>${tick('breakfast')}</td>
+      <td>${tick('lunch')}</td>
+      <td>${tick('snack')}</td>
+      <td>${tick('dinner')}</td>
+      <td>${badges}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7" class="no-data">No students parsed</td></tr>`;
+
+  document.getElementById('reportSection').style.display = 'block';
+}
+
+function clearAll() {
+  document.getElementById('chatInput').value = '';
+  document.getElementById('reportSection').style.display = 'none';
+  document.getElementById('unmatchedBox').innerHTML = '';
+}
+</script>
+</body>
+</html>
