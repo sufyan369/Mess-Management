@@ -631,13 +631,20 @@
   }
 
   @media print {
-    header, .card:first-child, .tabs, .btn, .unmatched-box, .btn-group, .hero, #bgCanvas, .mesh-bg, .grid-overlay, .scroll-indicator { display: none !important; }
-    body { background: #fff; color: #000; }
-    .card { background: #fff; border: 1px solid #ddd; }
-    #reportSection { animation: none; }
+    header, .card:first-child, .tabs, .btn, .unmatched-box, .btn-group, .hero, #bgCanvas, .mesh-bg, .grid-overlay, .scroll-indicator, .scroll-indicator, .toast { display: none !important; }
+    html, body { height: auto; overflow: visible; }
+    body { background: #fff; color: #000; padding: 0; margin: 0; }
+    .container { padding: 0 !important; max-width: 100% !important; }
+    .card { background: #fff; border: 1px solid #ddd; break-inside: avoid; margin: 0 0 10px 0 !important; box-shadow: none !important; }
+    #parseTab, #reportSection { display: block !important; padding: 0; margin: 0; }
+    #reportSection { animation: none; page-break-before: avoid; }
+    .meal-grid { break-inside: avoid; }
+    table { font-size: 11px; }
+    th, td { padding: 6px 8px; }
+    .meal-card .count { font-size: 32px; }
   }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 </head>
 <body>
 
@@ -719,7 +726,7 @@
       <div class="btn-group">
         <button class="btn btn-primary" onclick="parseChat()">⚡ Parse &amp; Count</button>
         <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
-        <button class="btn btn-ghost" id="downloadBtn" onclick="downloadPDF()">📄 PDF</button>
+        <button class="btn btn-ghost" onclick="printReport()">🖨️ Print</button>
       </div>
     </div>
 
@@ -1237,31 +1244,10 @@ function clearAll() {
   document.querySelector('#heroMeals .hs-num').textContent = '0';
 }
 
-function downloadPDF() {
-  const btn = document.getElementById('downloadBtn');
+function printReport() {
   const report = document.getElementById('reportSection');
-  if (report.style.display === 'none') { alert('Parse a chat first before downloading.'); return; }
-
-  btn.textContent = '⏳';
-  btn.disabled = true;
-
-  const opt = {
-    margin:        [10, 10, 10, 10],
-    filename:      `mess-duty-${new Date().toISOString().slice(0,10)}.pdf`,
-    image:         { type: 'jpeg', quality: 0.98 },
-    html2canvas:   { scale: 2, useCORS: true, letterRendering: true },
-    jsPDF:         { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:     { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  html2pdf().set(opt).from(report).save().then(() => {
-    btn.textContent = '📄 PDF';
-    btn.disabled = false;
-  }).catch(() => {
-    btn.textContent = '📄 PDF';
-    btn.disabled = false;
-    alert('Could not generate PDF. Try using the Print button instead.');
-  });
+  if (report.style.display === 'none') { alert('Parse a chat first before printing.'); return; }
+  window.print();
 }
 </script>
 </body>
