@@ -630,22 +630,14 @@
     box-shadow: 0 0 10px rgba(124,92,191,0.3);
   }
 
-  .cursor-dot {
-    position: fixed; width: 6px; height: 6px;
-    border-radius: 50%; pointer-events: none;
-    z-index: 9998; transition: transform 0.1s ease;
-    background: rgba(124,92,191,0.5);
-    box-shadow: 0 0 10px rgba(124,92,191,0.3);
-    transform: translate(-50%, -50%);
-  }
-
   @media print {
-    header, .card:first-child, .tabs, .btn, .unmatched-box, .btn-group, .hero, #bgCanvas, .mesh-bg, .grid-overlay, .scroll-indicator, .cursor-dot { display: none !important; }
+    header, .card:first-child, .tabs, .btn, .unmatched-box, .btn-group, .hero, #bgCanvas, .mesh-bg, .grid-overlay, .scroll-indicator { display: none !important; }
     body { background: #fff; color: #000; }
     .card { background: #fff; border: 1px solid #ddd; }
     #reportSection { animation: none; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -654,8 +646,6 @@
 <canvas id="bgCanvas"></canvas>
 
 <div class="scroll-indicator" id="scrollBar"></div>
-<div class="cursor-dot" id="cursorDot"></div>
-
 <div class="page-wrap">
 <header>
   <div class="brand">
@@ -716,7 +706,7 @@
       </div>
       <div class="textarea-wrap">
         <span class="textarea-label">Chat Log</span>
-        <textarea id="chatInput" placeholder="Paste your WhatsApp chat here...&#10;&#10;Example:&#10;[10/06/25, 8:12 AM] Rahul: B&#10;[10/06/25, 12:03 PM] Priya: L S"></textarea>
+        <textarea id="chatInput" placeholder="Paste your WhatsApp chat here...&#10;&#10;"></textarea>
       </div>
       <div class="help-row">
         Recognises:
@@ -729,7 +719,7 @@
       <div class="btn-group">
         <button class="btn btn-primary" onclick="parseChat()">⚡ Parse &amp; Count</button>
         <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
-        <button class="btn btn-ghost" onclick="window.print()">🖨️ Print</button>
+        <button class="btn btn-ghost" id="downloadBtn" onclick="downloadPDF()">📄 PDF</button>
       </div>
     </div>
 
@@ -957,11 +947,8 @@ window.addEventListener('scroll', () => {
 });
 
 let mx = 0, my = 0, pmx = 0, pmy = 0;
-const cursorDot = document.getElementById('cursorDot');
 window.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
-  cursorDot.style.left = mx + 'px';
-  cursorDot.style.top = my + 'px';
   const dx = mx - pmx, dy = my - pmy;
   const speed = Math.sqrt(dx*dx + dy*dy);
   if (speed > 8 && Math.random() < 0.3) {
@@ -1248,6 +1235,33 @@ function clearAll() {
   document.getElementById('unmatchedBox').innerHTML = '';
   document.querySelector('#heroTotal .hs-num').textContent = '0';
   document.querySelector('#heroMeals .hs-num').textContent = '0';
+}
+
+function downloadPDF() {
+  const btn = document.getElementById('downloadBtn');
+  const report = document.getElementById('reportSection');
+  if (report.style.display === 'none') { alert('Parse a chat first before downloading.'); return; }
+
+  btn.textContent = '⏳';
+  btn.disabled = true;
+
+  const opt = {
+    margin:        [10, 10, 10, 10],
+    filename:      `mess-duty-${new Date().toISOString().slice(0,10)}.pdf`,
+    image:         { type: 'jpeg', quality: 0.98 },
+    html2canvas:   { scale: 2, useCORS: true, letterRendering: true },
+    jsPDF:         { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:     { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  html2pdf().set(opt).from(report).save().then(() => {
+    btn.textContent = '📄 PDF';
+    btn.disabled = false;
+  }).catch(() => {
+    btn.textContent = '📄 PDF';
+    btn.disabled = false;
+    alert('Could not generate PDF. Try using the Print button instead.');
+  });
 }
 </script>
 </body>
